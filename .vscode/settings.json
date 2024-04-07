@@ -87,5 +87,10 @@
         "compare": "cpp",
         "concepts": "cpp",
         "algorithm": "cpp"
-    }
+    },
+    "files.autoSave": "afterDelay",
+    "cph.general.defaultLanguage": "cpp",
+    "cph.general.defaultLanguageTemplateFileLocation": "/Users/aminulhaque/Documents/cp/.template.cpp",
+    "cph.language.cpp.SubmissionCompiler": "GNU G++20 11.2.0 (64 bit, winlibs)",
+    "cph.language.cpp.Args": "-w -O2 -std=c++17"
 }
