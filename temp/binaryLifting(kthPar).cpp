@@ -1,47 +1,81 @@
 #include <bits/stdc++.h>
 using namespace std;
 
-#define ll long long
-#define all(x) (x).begin(), (x).end()
-#define f(i, n) for (int i = 0; i < n; i++)
-#define trace(x) cerr << #x << ": " << x << '\n'
-const int N = 2e5 + 5, M = 30;
-int a[N], par[N][M], dep[N], n, q;
+const int N = 3e5 + 9, LG = 18;
+
 vector<int> g[N];
-void dfs(int u, int p)
+int par[N][LG + 1], dep[N], sz[N];
+void dfs(int u, int p = 0)
 {
     par[u][0] = p;
     dep[u] = dep[p] + 1;
-    for (int i = 1; i < M; i++)
+    sz[u] = 1;
+    for (int i = 1; i <= LG; i++)
         par[u][i] = par[par[u][i - 1]][i - 1];
-    for (int v : g[u])
+    for (auto v : g[u])
         if (v != p)
+        {
             dfs(v, u);
+            sz[u] += sz[v];
+        }
 }
-int kth_par(int u, int k)
+int lca(int u, int v)
 {
-    for (int i = 0; i < M; i++)
+    if (dep[u] < dep[v])
+        swap(u, v);
+    for (int k = LG; k >= 0; k--)
+        if (dep[par[u][k]] >= dep[v])
+            u = par[u][k];
+    if (u == v)
+        return u;
+    for (int k = LG; k >= 0; k--)
+        if (par[u][k] != par[v][k])
+            u = par[u][k], v = par[v][k];
+    return par[u][0];
+}
+int kth(int u, int k)
+{
+    assert(k >= 0);
+    for (int i = 0; i <= LG; i++)
         if (k & (1 << i))
             u = par[u][i];
     return u;
 }
-int main()
+int dist(int u, int v)
 {
-    ios_base::sync_with_stdio(false);
-    cin.tie(NULL);
-    cin >> n >> q;
-    for (int i = 2; i <= n; i++)
+    int l = lca(u, v);
+    return dep[u] + dep[v] - (dep[l] << 1);
+}
+// kth node from u to v, 0th node is u
+int go(int u, int v, int k)
+{
+    int l = lca(u, v);
+    int d = dep[u] + dep[v] - (dep[l] << 1);
+    assert(k <= d);
+    if (dep[l] + k <= dep[u])
+        return kth(u, k);
+    k -= dep[u] - dep[l];
+    return kth(v, dep[v] - dep[l] - k);
+}
+int32_t main()
+{
+    int n;
+    cin >> n;
+    for (int i = 1; i < n; i++)
     {
-        int x;
-        cin >> x;
-        g[x].push_back(i);
-        g[i].push_back(x);
+        int u, v;
+        cin >> u >> v;
+        g[u].push_back(v);
+        g[v].push_back(u);
     }
-    dfs(1, 0);
+    dfs(1);
+    int q;
+    cin >> q;
     while (q--)
     {
-        int x, k;
-        cin >> x >> k;
-        cout << (dep[x] <= k ? -1 : kth_par(x, k)) << '\n';
+        int u, v;
+        cin >> u >> v;
+        cout << dist(u, v) << '\n';
     }
+    return 0;
 }
