@@ -1,0 +1,1 @@
+{"name":"Local: lcaQuery","url":"/Users/aminulhaque/Documents/cp/temp/lcaQuery.cpp","tests":[{"id":1728655666205,"input":"5 3\n-1 5 -1 3 -2\n1 2 2 1\n1 3\n2 4\n3 5","output":""}],"interactive":false,"memoryLimit":1024,"timeLimit":3000,"srcPath":"/Users/aminulhaque/Documents/cp/temp/lcaQuery.cpp","group":"local","local":true}
