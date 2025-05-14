@@ -6,6 +6,9 @@ g++ -o correct correct.cpp
 g++ -o wrong wrong.cpp
 g++ -o generator generator.cpp
 
+clang++ -std=c++17 run.cpp -o run
+./run
+
  */
 
 #include <iostream>
