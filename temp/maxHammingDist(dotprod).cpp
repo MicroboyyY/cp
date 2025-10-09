@@ -73,6 +73,7 @@ vector<long long> multiply(vector<int> &a, vector<int> &b)
 }
 
 long long ans[N];
+// duita string er moddeh koyta index a value same oitah precomp kore rakheh then first paibo query te
 int32_t main()
 {
     ios_base::sync_with_stdio(0);
