@@ -91,6 +91,7 @@ int32_t main()
         int n = a.size(), m = b.size();
         reverse(b.begin(), b.end());
         auto v = multiply(a, b);
+        // kun shift a koyta match korseh
         for (int i = 0; i < n - m + 1; i++)
             ans[i] += v[i + m - 1];
     }
