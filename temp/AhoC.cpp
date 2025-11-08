@@ -3,7 +3,7 @@ using namespace std;
 
 struct AC
 {
-    static const int A = 26;
+    static const int A = 26, N = 500005;
     struct Node
     {
         int nxt[A];
@@ -12,20 +12,22 @@ struct AC
         Node() { memset(nxt, 0, sizeof nxt); }
     };
     vector<Node> t;
+    vector<int> bfs_order;
     AC()
     {
-        t.reserve(500000 + 5);
+        t.reserve(N);
         t.emplace_back();
     }
+    inline int idx(char ch) const { return ch - 'a'; }
     void add(const string &s, int id)
     {
         int u = 0;
         for (char ch : s)
         {
-            int c = ch - 'a';
+            int c = idx(ch);
             if (!t[u].nxt[c])
             {
-                t[u].nxt[c] = t.size();
+                t[u].nxt[c] = (int)t.size();
                 t.emplace_back();
             }
             u = t[u].nxt[c];
@@ -50,6 +52,7 @@ struct AC
         {
             int u = q.front();
             q.pop();
+            bfs_order.push_back(u);
             int sl = t[u].link;
             for (int c = 0; c < A; c++)
             {
@@ -70,6 +73,7 @@ int main()
 {
     ios::sync_with_stdio(false);
     cin.tie(nullptr);
+
     string text;
     cin >> text;
     int n;
@@ -77,26 +81,46 @@ int main()
     vector<string> p(n);
     for (int i = 0; i < n; i++)
         cin >> p[i];
+
+    for (char &ch : text)
+        if ('A' <= ch && ch <= 'Z')
+            ch = char(ch - 'A' + 'a');
+    for (auto &s : p)
+        for (char &ch : s)
+            if ('A' <= ch && ch <= 'Z')
+                ch = char(ch - 'A' + 'a');
+
     AC ac;
     for (int i = 0; i < n; i++)
         ac.add(p[i], i);
     ac.build();
-    vector<char> seen(n, 0);
-    vector<char> used_node(ac.t.size(), 0);
+
+    vector<long long> cnt(ac.t.size(), 0);
     int u = 0;
     for (char ch : text)
     {
-        u = ac.t[u].nxt[ch - 'a'];
-        int v = u;
-        while (v && !used_node[v])
+        if (ch < 'a' || ch > 'z')
         {
-            for (int id : ac.t[v].out)
-                seen[id] = 1;
-            used_node[v] = 1;
-            v = ac.t[v].link;
+            u = 0;
+            continue;
         }
+        u = ac.t[u].nxt[ch - 'a'];
+        cnt[u]++;
     }
+
+    for (int i = (int)ac.bfs_order.size() - 1; i >= 0; --i)
+    {
+        int v = ac.bfs_order[i];
+        int f = ac.t[v].link;
+        cnt[f] += cnt[v];
+    }
+
+    vector<long long> ans(n, 0);
+    for (int v = 0; v < (int)ac.t.size(); v++)
+        for (int id : ac.t[v].out)
+            ans[id] += cnt[v];
+
     for (int i = 0; i < n; i++)
-        cout << (seen[i] ? "YES" : "NO") << '\n';
+        cout << ans[i] << '\n';
     return 0;
 }
