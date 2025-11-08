@@ -1,4 +1,4 @@
-//find all pos in text where s occure
+// find all pos in text where s occure
 #include <bits/stdc++.h>
 using namespace std;
 
@@ -98,7 +98,7 @@ int main()
     for (int i = 0; i < (int)s.size(); i++)
     {
         u = ac.t[u].nxt[s[i] - 'a'];
-        for (int pid : ac.t[u].out)
+        for (int pid : ac.t[u].out)//jei jei string er idx a ses hoise tader idx
         {
             int st = i - L[pid] + 1;
             if (st >= 0)
