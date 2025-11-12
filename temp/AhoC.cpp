@@ -91,11 +91,6 @@ int main()
     int u = 0;
     for (char ch : text)
     {
-        if (ch < 'a' || ch > 'z')
-        {
-            u = 0;
-            continue;
-        }
         u = ac.t[u].nxt[ch - 'a'];
         cnt[u]++;
     }
