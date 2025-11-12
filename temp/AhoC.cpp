@@ -82,14 +82,6 @@ int main()
     for (int i = 0; i < n; i++)
         cin >> p[i];
 
-    for (char &ch : text)
-        if ('A' <= ch && ch <= 'Z')
-            ch = char(ch - 'A' + 'a');
-    for (auto &s : p)
-        for (char &ch : s)
-            if ('A' <= ch && ch <= 'Z')
-                ch = char(ch - 'A' + 'a');
-
     AC ac;
     for (int i = 0; i < n; i++)
         ac.add(p[i], i);
