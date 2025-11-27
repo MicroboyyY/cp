@@ -127,6 +127,21 @@ void dfs_hld(int u)
     en[u] = T;
 }
 int n;
+void path_add(int u, int v) // add on path from u to v
+{
+    while (head[u] != head[v])
+    {
+        if (dep[head[u]] < dep[head[v]])
+            swap(u, v);
+        t.upd(1, 1, n, st[head[u]], st[u], 1);
+        u = par[head[u]][0];
+    }
+    if (dep[u] < dep[v])
+        swap(u, v);
+    // edges are from v+1 down to u
+    if (st[v] + 1 <= st[u])
+        t.upd(1, 1, n, st[v] + 1, st[u], 1); // change this according to the operation
+}
 int query_up(int u, int v) // query from u to v (v is an ancestor of u)
 {
     int ans = -inf; // change this according to the operation
