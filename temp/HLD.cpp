@@ -127,7 +127,7 @@ void dfs_hld(int u)
     en[u] = T;
 }
 int n;
-int query_up(int u, int v)
+int query_up(int u, int v) // query from u to v (v is an ancestor of u)
 {
     int ans = -inf;
     while (head[u] != head[v])
@@ -138,7 +138,7 @@ int query_up(int u, int v)
     ans = max(ans, t.query(1, 1, n, st[v], st[u]));
     return ans;
 }
-int query(int u, int v)
+int query(int u, int v) // query from u to v
 {
     int l = lca(u, v);
     int ans = query_up(u, l);
