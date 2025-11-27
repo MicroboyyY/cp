@@ -135,6 +135,7 @@ int query_up(int u, int v) // query from u to v (v is an ancestor of u)
         ans = max(ans, t.query(1, 1, n, st[head[u]], st[u])); // change this according to the operation
         u = par[head[u]][0];
     }
+    // if edges are stored then use st[v]+1,st[u]
     ans = max(ans, t.query(1, 1, n, st[v], st[u])); // change this according to the operation
     return ans;
 }
