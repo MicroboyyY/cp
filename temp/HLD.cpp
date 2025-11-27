@@ -2,7 +2,7 @@
 using namespace std;
 
 const int N = 1e5 + 9, LG = 18, inf = 1e9 + 9;
-
+int hldarr[N]; // if there is an initial array
 struct ST
 {
 #define lc (n << 1)
@@ -17,7 +17,7 @@ struct ST
     {
         if (lazy[n] == 0)
             return;
-        t[n] = t[n] + lazy[n];
+        t[n] = t[n] + lazy[n]; // change this according to the operation
         if (b != e)
         {
             lazy[lc] = lazy[lc] + lazy[n];
@@ -27,17 +27,17 @@ struct ST
     }
     inline int combine(int a, int b)
     {
-        return max(a, b); // merge left and right queries
+        return max(a, b); // merge left and right queries and change
     }
     inline void pull(int n)
     {
-        t[n] = max(t[lc], t[rc]); // merge lower nodes of the tree to get the parent node
+        t[n] = max(t[lc], t[rc]); // merge lower nodes of the tree to get the parent node and change
     }
     void build(int n, int b, int e)
     {
         if (b == e)
         {
-            t[n] = 0;
+            t[n] = 0; // change this according to the initial array
             return;
         }
         int mid = (b + e) >> 1;
@@ -52,7 +52,7 @@ struct ST
             return;
         if (i <= b && e <= j)
         {
-            lazy[n] += v;
+            lazy[n] += v; // change this according to the operation
             push(n, b, e);
             return;
         }
@@ -65,7 +65,7 @@ struct ST
     {
         push(n, b, e);
         if (i > e || b > j)
-            return -inf;
+            return -inf; // change this according to the operation
         if (i <= b && e <= j)
             return t[n];
         int mid = (b + e) >> 1;
@@ -129,13 +129,13 @@ void dfs_hld(int u)
 int n;
 int query_up(int u, int v) // query from u to v (v is an ancestor of u)
 {
-    int ans = -inf;
+    int ans = -inf; // change this according to the operation
     while (head[u] != head[v])
     {
-        ans = max(ans, t.query(1, 1, n, st[head[u]], st[u]));
+        ans = max(ans, t.query(1, 1, n, st[head[u]], st[u])); // change this according to the operation
         u = par[head[u]][0];
     }
-    ans = max(ans, t.query(1, 1, n, st[v], st[u]));
+    ans = max(ans, t.query(1, 1, n, st[v], st[u])); // change this according to the operation
     return ans;
 }
 int query(int u, int v) // query from u to v
@@ -143,7 +143,7 @@ int query(int u, int v) // query from u to v
     int l = lca(u, v);
     int ans = query_up(u, l);
     if (v != l)
-        ans = max(ans, query_up(v, kth(v, dep[v] - dep[l] - 1)));
+        ans = max(ans, query_up(v, kth(v, dep[v] - dep[l] - 1))); // change this according to the operation
     return ans;
 }
 int32_t main()
@@ -164,6 +164,11 @@ int32_t main()
     dfs_hld(1);
     int q;
     cin >> q;
+    // if there is an array then hld array construction
+    // for (int i = 1; i <= n; i++)
+    // {
+    //     hldarr[st[i]] = arr[i]; // change this according to the initial array
+    // }
     t.build(1, 1, n);
     while (q--)
     {
