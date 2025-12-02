@@ -1,3 +1,10 @@
+/*
+maximum pairing
+ minimum things to remove to break all edges, or
+maximum set of vertices with no edge between them.
+kisu pair asee aksathe nawa jabe nh oighula badd dite hbe so mn koto badd dibo
+*/
+
 #include <bits/stdc++.h>
 using namespace std;
 
