@@ -56,6 +56,16 @@ struct PST
         int mid = b + e >> 1;
         return query(lc, b, mid, l, r) + query(rc, mid + 1, e, l, r);
     }
+    int kth(int cur, int b, int e, int k) // kth one in the current version
+    {
+        if (b == e)
+            return b;
+        int mid = b + e >> 1;
+        if (t[t[cur].l].val >= k)
+            return kth(t[cur].l, b, mid, k);
+        else
+            return kth(t[cur].r, mid + 1, e, k - t[t[cur].l].val);
+    }
 } t;
 
 int V[N], root[N], a[N];
