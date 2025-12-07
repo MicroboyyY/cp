@@ -1,86 +1,94 @@
 #include <bits/stdc++.h>
 using namespace std;
 
-const int N = 1e5 + 9;
-
-struct PST
+const int N = 2e5 + 9;
+int a[N], root[N];
+struct SegTree
 {
 #define lc t[cur].l
 #define rc t[cur].r
     struct node
     {
-        int l = 0, r = 0, val = 0;
-    } t[20 * N];
+        int l = 0, r = 0;
+        int val = 0;
+        int lazy = 0;
+    } t[4 * N];
     int T = 0;
-    int build(int b, int e)
-    {
-        int cur = ++T;
-        if (b == e)
-            return cur;
-        int mid = b + e >> 1;
-        lc = build(b, mid);
-        rc = build(mid + 1, e);
-        t[cur].val = t[lc].val + t[rc].val;
-        return cur;
-    }
-    int upd(int pre, int b, int e, int i, int v)
-    {
-        int cur = ++T;
-        t[cur] = t[pre];
-        if (b == e)
-        {
-            t[cur].val += v;
-            return cur;
-        }
-        int mid = b + e >> 1;
-        if (i <= mid)
-        {
-            rc = t[pre].r;
-            lc = upd(t[pre].l, b, mid, i, v);
-        }
-        else
-        {
-            lc = t[pre].l;
-            rc = upd(t[pre].r, mid + 1, e, i, v);
-        }
-        t[cur].val = t[lc].val + t[rc].val;
-        return cur;
-    }
-    int query(int pre, int cur, int b, int e, int k)
-    {
-        if (b == e)
-            return b;
-        int cnt = t[lc].val - t[t[pre].l].val;
-        int mid = b + e >> 1;
-        if (cnt >= k)
-            return query(t[pre].l, lc, b, mid, k);
-        else
-            return query(t[pre].r, rc, mid + 1, e, k - cnt);
-    }
-} t;
 
-// the code returns k-th number in a range l to r if the range were sorted
-int V[N], root[N], a[N];
+    void build(int cur, int b, int e)
+    {
+        if (b == e)
+        {
+            t[cur].val = a[b];
+            return;
+        }
+        int mid = (b + e) >> 1;
+        lc = cur << 1;
+        rc = cur << 1 | 1;
+        build(lc, b, mid);
+        build(rc, mid + 1, e);
+        t[cur].val = t[lc].val + t[rc].val;
+    }
+
+    void push(int cur, int b, int e)
+    {
+        if (t[cur].lazy == 0)
+            return;
+        t[cur].val += (e - b + 1) * t[cur].lazy;
+        if (b != e)
+        {
+            lc = cur << 1;
+            rc = cur << 1 | 1;
+            t[lc].lazy += t[cur].lazy;
+            t[rc].lazy += t[cur].lazy;
+        }
+        t[cur].lazy = 0;
+    }
+
+    void upd(int cur, int b, int e, int l, int r, int v)
+    {
+        push(cur, b, e);
+        if (b > r || e < l)
+            return;
+        if (b >= l && e <= r)
+        {
+            t[cur].lazy += v;
+            push(cur, b, e);
+            return;
+        }
+        int mid = (b + e) >> 1;
+        lc = cur << 1;
+        rc = cur << 1 | 1;
+        upd(lc, b, mid, l, r, v);
+        upd(rc, mid + 1, e, l, r, v);
+        t[cur].val = t[lc].val + t[rc].val;
+    }
+
+    int query(int cur, int b, int e, int l, int r)
+    {
+        push(cur, b, e);
+        if (b > r || e < l)
+            return 0;
+        if (b >= l && e <= r)
+            return t[cur].val;
+        int mid = (b + e) >> 1;
+        lc = cur << 1;
+        rc = cur << 1 | 1;
+        return query(lc, b, mid, l, r) + query(rc, mid + 1, e, l, r);
+    }
+} st;
+
+int a[N];
+
 int32_t main()
 {
-    map<int, int> mp;
+    ios::sync_with_stdio(false);
+    cin.tie(nullptr);
+
     int n, q;
     cin >> n >> q;
     for (int i = 1; i <= n; i++)
-        cin >> a[i], mp[a[i]];
-    int c = 0;
-    for (auto x : mp)
-        mp[x.first] = ++c, V[c] = x.first;
-    root[0] = t.build(1, n);
-    for (int i = 1; i <= n; i++)
-    {
-        root[i] = t.upd(root[i - 1], 1, n, mp[a[i]], 1);
-    }
-    while (q--)
-    {
-        int l, r, k;
-        cin >> l >> r >> k;
-        cout << V[t.query(root[l - 1], root[r], 1, n, k)] << '\n';
-    }
+        cin >> a[i];
+
     return 0;
 }
