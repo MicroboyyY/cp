@@ -17,14 +17,12 @@ struct PST
     {
         int cur = ++T;
         t[cur].l = t[cur].r = 0;
-        t[cur].val = 0;
-        t[cur].lazy = 0;
+        t[cur].val = t[cur].lazy = 0;
         if (b == e)
             return cur;
         int mid = (b + e) >> 1;
         t[cur].l = build(b, mid);
         t[cur].r = build(mid + 1, e);
-        t[cur].val = t[t[cur].l].val + t[t[cur].r].val;
         return cur;
     }
 
@@ -33,22 +31,26 @@ struct PST
         if (t[cur].lazy == 0 || b == e)
             return;
         int mid = (b + e) >> 1;
-        int oldL = t[cur].l;
-        int oldR = t[cur].r;
+        int oldL = t[cur].l, oldR = t[cur].r;
 
-        int newL = ++T;
-        t[newL] = t[oldL];
-        t[newL].lazy += t[cur].lazy;
-        t[newL].val += t[cur].lazy * (mid - b + 1);
+        int L = ++T;
+        t[L] = t[oldL];
+        t[L].lazy += t[cur].lazy;
+        t[L].val += t[cur].lazy * (mid - b + 1);
 
-        int newR = ++T;
-        t[newR] = t[oldR];
-        t[newR].lazy += t[cur].lazy;
-        t[newR].val += t[cur].lazy * (e - mid);
+        int R = ++T;
+        t[R] = t[oldR];
+        t[R].lazy += t[cur].lazy;
+        t[R].val += t[cur].lazy * (e - mid);
 
-        t[cur].l = newL;
-        t[cur].r = newR;
+        t[cur].l = L;
+        t[cur].r = R;
         t[cur].lazy = 0;
+    }
+
+    void merge(int cur)
+    {
+        t[cur].val = t[t[cur].l].val + t[t[cur].r].val;
     }
 
     int upd(int pre, int b, int e, int l, int r, int v)
@@ -65,11 +67,9 @@ struct PST
         }
         push(cur, b, e);
         int mid = (b + e) >> 1;
-        int L = upd(t[cur].l, b, mid, l, r, v);
-        int R = upd(t[cur].r, mid + 1, e, l, r, v);
-        t[cur].l = L;
-        t[cur].r = R;
-        t[cur].val = t[L].val + t[R].val;
+        t[cur].l = upd(t[cur].l, b, mid, l, r, v);
+        t[cur].r = upd(t[cur].r, mid + 1, e, l, r, v);
+        merge(cur);
         return cur;
     }
 
@@ -79,24 +79,28 @@ struct PST
             return 0;
         if (b >= l && e <= r)
             return t[cur].val + add * (e - b + 1);
+        add += t[cur].lazy;
         int mid = (b + e) >> 1;
-        int nadd = add + t[cur].lazy;
-        return query(t[cur].l, b, mid, l, r, nadd) +
-               query(t[cur].r, mid + 1, e, l, r, nadd);
+        return query(t[cur].l, b, mid, l, r, add) +
+               query(t[cur].r, mid + 1, e, l, r, add);
     }
 } t;
 
-int root[N], a[N];
+int V[N], root[N], a[N];
 
 int32_t main()
 {
     ios::sync_with_stdio(0);
     cin.tie(0);
 
+    map<int, int> mp;
     int n, k;
     cin >> n >> k;
     for (int i = 1; i <= n; i++)
-        cin >> a[i];
+        cin >> a[i], mp[a[i]];
+    int c = 0;
+    for (auto x : mp)
+        mp[x.first] = ++c, V[c] = x.first;
 
     root[0] = t.build(1, n);
 
