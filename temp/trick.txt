@@ -1,0 +1,91 @@
+no of pair with gcd =1 
+
+/*
+#include <bits/stdc++.h>
+using namespace std;
+
+const int N = 5e5 + 9;
+
+int mob[N];
+
+// Sieve for Möbius function mu(n)
+void mobius() {
+  mob[1] = 1;
+  for (int i = 2; i < N; i++) {
+    mob[i]--;                     // mob[i] starts from 0, so this sets mob[i] = -1 initially
+    for (int j = i + i; j < N; j += i) {
+      mob[j] -= mob[i];
+    }
+  }
+}
+
+bool vis[N];          // vis[i] = is index i currently turned on?
+vector<int> d[N];     // d[x] = list of squarefree divisors (with mu != 0) of x
+int mul[N];           // mul[y] = how many active numbers are divisible by y
+
+// increase/decrease counts for all divisors of x
+void add(int x, int k) {
+  for (int y : d[x]) {
+    mul[y] += k;
+  }
+}
+
+// number of currently active numbers that are coprime with x
+int query(int x) {
+  int ans = 0;
+  for (int y : d[x]) {
+    ans += mul[y] * mob[y];
+  }
+  return ans;
+}
+
+int a[N];
+
+int32_t main() {
+  ios_base::sync_with_stdio(false);
+  cin.tie(nullptr);
+
+  mobius();
+
+  // precompute divisors for all x, but only for y with mob[y] != 0 (squarefree)
+  for (int i = 1; i < N; i++) {
+    if (mob[i]) {
+      for (int j = i; j < N; j += i) {
+        d[j].push_back(i);
+      }
+    }
+  }
+
+  int n, q;
+  cin >> n >> q;
+  for (int i = 1; i <= n; i++) {
+    cin >> a[i];
+  }
+
+  long long ans = 0;   // total number of pairs with gcd = 1
+
+  while (q--) {
+    int i;
+    cin >> i;
+
+    if (vis[i]) {
+      // remove a[i]
+      ans -= query(a[i]);       // remove all pairs where this element was one endpoint
+      ans += (a[i] == 1);       // we subtracted itself once if a[i] == 1 (gcd(1,1)=1), fix that
+      add(a[i], -1);
+    } else {
+      // add a[i]
+      ans += query(a[i]);       // all new pairs formed with existing active elements
+      add(a[i], 1);
+    }
+    vis[i] ^= 1;                // toggle
+
+    cout << ans << '\n';
+  }
+
+  return 0;
+}
+*/
+
+
+
