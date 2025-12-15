@@ -1,13 +1,9 @@
+// kth lexo min substr
 #include <bits/stdc++.h>
 using namespace std;
-
+#define int long long
 const int N = 3e5 + 9;
 
-// len -> largest string length of the corresponding endpos-equivalent class
-// link -> longest suffix that is another endpos-equivalent class.
-// firstpos -> 1 indexed end position of the first occurrence of the largest string of that node
-// minlen(v) -> smallest string of node v = len(link(v)) + 1
-// terminal nodes -> store the suffixes
 struct SuffixAutomaton
 {
     struct node
@@ -102,7 +98,7 @@ struct SuffixAutomaton
         build_tree();
     }
     long long cnt(int i)
-    { // number of times i-th node occurs in the string
+    {
         if (dp[i] != -1)
             return dp[i];
         long long ret = terminal[i];
@@ -116,19 +112,67 @@ int32_t main()
 {
     ios_base::sync_with_stdio(0);
     cin.tie(0);
-    int t;
-    cin >> t;
+
+    int t = 1;
     while (t--)
     {
-        string s;
+        string s, res;
         cin >> s;
-        int n = s.size();
+        int k, n = s.size();
+        cin >> k;
+
         SuffixAutomaton sa(n);
         sa.build(s);
-        long long ans = 0; // number of unique substrings
-        for (int i = 1; i < sa.sz; i++)
-            ans += sa.t[i].len - sa.t[sa.t[i].link].len;
-        cout << ans << '\n';
+        // no of unique substring
+        //  int ans=0;
+        //  for (int i = 1; i < sa.sz; i++) ans += sa.t[i].len - sa.t[sa.t[i].link].len;
+
+        vector<int> cntLen(n + 1, 0), order(sa.sz);
+        for (int i = 0; i < sa.sz; i++)
+            cntLen[sa.t[i].len]++;
+        for (int i = 1; i <= n; i++)
+            cntLen[i] += cntLen[i - 1];
+        for (int i = sa.sz - 1; i >= 0; i--)
+            order[--cntLen[sa.t[i].len]] = i;
+
+        vector<int> dp2(sa.sz, 0);
+        for (int idx = sa.sz - 1; idx >= 0; idx--)
+        {
+            int v = order[idx];
+            int sum = 0;
+            for (auto &e : sa.t[v].nxt)
+            {
+                int to = e.second;
+                sum += dp2[to] + 1;
+            }
+            dp2[v] = sum;
+        }
+
+        int node = 0;
+        while (k > 0)
+        {
+            for (char c = 'a'; c <= 'z'; c++)
+            {
+                auto it = sa.t[node].nxt.find(c);
+                if (it == sa.t[node].nxt.end())
+                    continue;
+                int to = it->second;
+                int block = dp2[to] + 1;
+                if (k > block)
+                {
+                    k -= block;
+                }
+                else
+                {
+                    res.push_back(c);
+                    k--;
+                    node = to;
+                    break;
+                }
+            }
+        }
+
+        cout << res << '\n';
     }
     return 0;
 }
