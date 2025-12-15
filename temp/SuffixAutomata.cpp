@@ -1,4 +1,4 @@
-// kth lexo min substr
+// kth dist kjnlexo min substr
 #include <bits/stdc++.h>
 using namespace std;
 #define int long long
