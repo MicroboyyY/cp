@@ -1,233 +1,114 @@
 #include <bits/stdc++.h>
 using namespace std;
-#define int long long
-const int N = 5e5 + 9;
-const int LG = 18;
 
-void induced_sort(const vector<int> &vec, int val_range, vector<int> &SA, const vector<bool> &sl, const vector<int> &lms_idx)
-{
-    vector<int> l(val_range, 0), r(val_range, 0);
-    for (int c : vec)
-    {
-        if (c + 1 < val_range)
-            ++l[c + 1];
-        ++r[c];
-    }
-    partial_sum(l.begin(), l.end(), l.begin());
-    partial_sum(r.begin(), r.end(), r.begin());
-    fill(SA.begin(), SA.end(), -1);
-    for (int i = lms_idx.size() - 1; i >= 0; --i)
-        SA[--r[vec[lms_idx[i]]]] = lms_idx[i];
-    for (int i : SA)
-        if (i >= 1 && sl[i - 1])
-        {
-            SA[l[vec[i - 1]]++] = i - 1;
-        }
-    fill(r.begin(), r.end(), 0);
-    for (int c : vec)
-        ++r[c];
-    partial_sum(r.begin(), r.end(), r.begin());
-    for (int k = SA.size() - 1, i = SA[k]; k >= 1; --k, i = SA[k])
-        if (i >= 1 && !sl[i - 1])
-        {
-            SA[--r[vec[i - 1]]] = i - 1;
-        }
-}
+const int N = 3e5 + 9;
 
-vector<int> SA_IS(const vector<int> &vec, int val_range)
+// len -> largest string length of the corresponding endpos-equivalent class
+// link -> longest suffix that is another endpos-equivalent class.
+// firstpos -> 1 indexed end position of the first occurrence of the largest string of that node
+// minlen(v) -> smallest string of node v = len(link(v)) + 1
+// terminal nodes -> store the suffixes
+struct SuffixAutomaton
 {
-    const int n = vec.size();
-    vector<int> SA(n), lms_idx;
-    vector<bool> sl(n);
-    sl[n - 1] = false;
-    for (int i = n - 2; i >= 0; --i)
+    struct node
     {
-        sl[i] = (vec[i] > vec[i + 1] || (vec[i] == vec[i + 1] && sl[i + 1]));
-        if (sl[i] && !sl[i + 1])
-            lms_idx.push_back(i + 1);
+        int len, link, firstpos;
+        map<char, int> nxt;
+    };
+    int sz, last;
+    vector<node> t;
+    vector<int> terminal;
+    vector<long long> dp;
+    vector<vector<int>> g;
+    SuffixAutomaton() {}
+    SuffixAutomaton(int n)
+    {
+        t.resize(2 * n);
+        terminal.resize(2 * n, 0);
+        dp.resize(2 * n, -1);
+        sz = 1;
+        last = 0;
+        g.resize(2 * n);
+        t[0].len = 0;
+        t[0].link = -1;
+        t[0].firstpos = 0;
     }
-    reverse(lms_idx.begin(), lms_idx.end());
-    induced_sort(vec, val_range, SA, sl, lms_idx);
-    vector<int> new_lms_idx(lms_idx.size()), lms_vec(lms_idx.size());
-    for (int i = 0, k = 0; i < n; ++i)
-        if (!sl[SA[i]] && SA[i] >= 1 && sl[SA[i] - 1])
-        {
-            new_lms_idx[k++] = SA[i];
-        }
-    int cur = 0;
-    SA[n - 1] = cur;
-    for (size_t k = 1; k < new_lms_idx.size(); ++k)
+    void extend(char c)
     {
-        int i = new_lms_idx[k - 1], j = new_lms_idx[k];
-        if (vec[i] != vec[j])
+        int p = last;
+        if (t[p].nxt.count(c))
         {
-            SA[j] = ++cur;
-            continue;
-        }
-        bool flag = false;
-        for (int a = i + 1, b = j + 1;; ++a, ++b)
-        {
-            if (vec[a] != vec[b])
+            int q = t[p].nxt[c];
+            if (t[q].len == t[p].len + 1)
             {
-                flag = true;
-                break;
+                last = q;
+                return;
             }
-            if ((!sl[a] && sl[a - 1]) || (!sl[b] && sl[b - 1]))
+            int clone = sz++;
+            t[clone] = t[q];
+            t[clone].len = t[p].len + 1;
+            t[q].link = clone;
+            last = clone;
+            while (p != -1 && t[p].nxt[c] == q)
             {
-                flag = !((!sl[a] && sl[a - 1]) && (!sl[b] && sl[b - 1]));
-                break;
+                t[p].nxt[c] = clone;
+                p = t[p].link;
             }
+            return;
         }
-        SA[j] = (flag ? ++cur : cur);
-    }
-    for (size_t i = 0; i < lms_idx.size(); ++i)
-        lms_vec[i] = SA[lms_idx[i]];
-    if (cur + 1 < (int)lms_idx.size())
-    {
-        auto lms_SA = SA_IS(lms_vec, cur + 1);
-        for (size_t i = 0; i < lms_idx.size(); ++i)
+        int cur = sz++;
+        t[cur].len = t[last].len + 1;
+        t[cur].firstpos = t[cur].len;
+        p = last;
+        while (p != -1 && !t[p].nxt.count(c))
         {
-            new_lms_idx[i] = lms_idx[lms_SA[i]];
+            t[p].nxt[c] = cur;
+            p = t[p].link;
         }
-    }
-    induced_sort(vec, val_range, SA, sl, new_lms_idx);
-    return SA;
-}
-vector<int> suffix_array(const string &s, const int LIM = 128)
-{
-    vector<int> vec(s.size() + 1);
-    copy(begin(s), end(s), begin(vec));
-    vec.back() = '!';
-    auto ret = SA_IS(vec, LIM);
-    ret.erase(ret.begin());
-    return ret;
-}
-struct SuffixArray
-{
-    int n;
-    string s;
-    vector<int> sa, rank, lcp;
-    vector<vector<int>> t;
-    vector<int> lg;
-    SuffixArray() {}
-    SuffixArray(string _s)
-    {
-        n = _s.size();
-        s = _s;
-        sa = suffix_array(s);
-        rank.resize(n);
-        for (int i = 0; i < n; i++)
-            rank[sa[i]] = i;
-        costruct_lcp();
-        prec();
-        build();
-    }
-    void costruct_lcp()
-    {
-        int k = 0;
-        lcp.resize(n - 1, 0);
-        for (int i = 0; i < n; i++)
+        if (p == -1)
+            t[cur].link = 0;
+        else
         {
-            if (rank[i] == n - 1)
+            int q = t[p].nxt[c];
+            if (t[p].len + 1 == t[q].len)
+                t[cur].link = q;
+            else
             {
-                k = 0;
-                continue;
-            }
-            int j = sa[rank[i] + 1];
-            while (i + k < n && j + k < n && s[i + k] == s[j + k])
-                k++;
-            lcp[rank[i]] = k;
-            if (k)
-                k--;
-        }
-    }
-    void prec()
-    {
-        lg.resize(n, 0);
-        for (int i = 2; i < n; i++)
-            lg[i] = lg[i / 2] + 1;
-    }
-    void build()
-    {
-        int sz = n - 1;
-        t.resize(sz);
-        for (int i = 0; i < sz; i++)
-        {
-            t[i].resize(LG);
-            t[i][0] = lcp[i];
-        }
-        for (int k = 1; k < LG; ++k)
-        {
-            for (int i = 0; i + (1 << k) - 1 < sz; ++i)
-            {
-                t[i][k] = min(t[i][k - 1], t[i + (1 << (k - 1))][k - 1]);
+                int clone = sz++;
+                t[clone] = t[q];
+                t[clone].len = t[p].len + 1;
+                while (p != -1 && t[p].nxt[c] == q)
+                {
+                    t[p].nxt[c] = clone;
+                    p = t[p].link;
+                }
+                t[q].link = t[cur].link = clone;
             }
         }
+        last = cur;
     }
-    int query(int l, int r)
-    { // minimum of lcp[l], ..., lcp[r]
-        int k = lg[r - l + 1];
-        return min(t[l][k], t[r - (1 << k) + 1][k]);
-    }
-    int get_lcp(int i, int j)
-    { // lcp of suffix starting from i and j
-        if (i == j)
-            return n - i;
-        int l = rank[i], r = rank[j];
-        if (l > r)
-            swap(l, r);
-        return query(l, r - 1);
-    }
-    int lower_bound(string &t)
+    void build_tree()
     {
-        int l = 0, r = n - 1, k = t.size(), ans = n;
-        while (l <= r)
-        {
-            int mid = l + r >> 1;
-            if (s.substr(sa[mid], min(n - sa[mid], k)) >= t)
-                ans = mid, r = mid - 1;
-            else
-                l = mid + 1;
-        }
-        return ans;
+        for (int i = 1; i < sz; i++)
+            g[t[i].link].push_back(i);
     }
-    int upper_bound(string &t)
+    void build(string &s)
     {
-        int l = 0, r = n - 1, k = t.size(), ans = n;
-        while (l <= r)
+        for (auto x : s)
         {
-            int mid = l + r >> 1;
-            if (s.substr(sa[mid], min(n - sa[mid], k)) > t)
-                ans = mid, r = mid - 1;
-            else
-                l = mid + 1;
+            extend(x);
+            terminal[last] = 1;
         }
-        return ans;
+        build_tree();
     }
-    // occurrences of s[p, ..., p + len - 1]
-    pair<int, int> find_occurrence(int p, int len)
-    {
-        p = rank[p];
-        pair<int, int> ans = {p, p};
-        int l = 0, r = p - 1;
-        while (l <= r)
-        {
-            int mid = l + r >> 1;
-            if (query(mid, p - 1) >= len)
-                ans.first = mid, r = mid - 1;
-            else
-                l = mid + 1;
-        }
-        l = p + 1, r = n - 1;
-        while (l <= r)
-        {
-            int mid = l + r >> 1;
-            if (query(p, mid - 1) >= len)
-                ans.second = mid, l = mid + 1;
-            else
-                r = mid - 1;
-        }
-        return ans;
+    long long cnt(int i)
+    { // number of times i-th node occurs in the string
+        if (dp[i] != -1)
+            return dp[i];
+        long long ret = terminal[i];
+        for (auto &x : g[i])
+            ret += cnt(x);
+        return dp[i] = ret;
     }
 };
 
@@ -235,32 +116,19 @@ int32_t main()
 {
     ios_base::sync_with_stdio(0);
     cin.tie(0);
-    string s;
-    cin >> s;
-    SuffixArray sa(s);
-    int k, n = s.size();
-    cin >> k;
-    vector<int> psasz(n + 2), psacnt(n + 2);
-    psasz[1] = n - sa.sa[0];
-    for (int i = 1; i < n; i++)
+    int t;
+    cin >> t;
+    while (t--)
     {
-        // cout << sa.sa[i] << ' ' << n - sa.sa[i] << endl;
-        psasz[i + 1] = psasz[i] + (n - sa.sa[i]);
-        psacnt[i + 1] = psacnt[i] + sa.get_lcp(sa.sa[i - 1], sa.sa[i]);
+        string s;
+        cin >> s;
+        int n = s.size();
+        SuffixAutomaton sa(n);
+        sa.build(s);
+        long long ans = 0; // number of unique substrings
+        for (int i = 1; i < sa.sz; i++)
+            ans += sa.t[i].len - sa.t[sa.t[i].link].len;
+        cout << ans << '\n';
     }
-    int l = 0, r = n - 1, mid, ans;
-    while (l <= r)
-    {
-        mid = (l + r) / 2;
-        int dist = psasz[mid + 1] - psacnt[mid + 1];
-        if (dist >= k)
-            ans = mid, r = mid - 1;
-        else
-            l = mid + 1;
-    }
-    int agedist = psasz[ans] - psacnt[ans];
-    int need = k - agedist;
-    int sz = need + (ans ? sa.get_lcp(sa.sa[ans], sa.sa[ans - 1]) : 0);
-    cout << s.substr(sa.sa[ans], sz) << '\n';
     return 0;
 }
